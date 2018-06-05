@@ -78,6 +78,8 @@
         <!--================End Banner Area =================-->
         <div id="curve_chart" style="width: 900px; height: 500px"></div>
         <div id="curve_chart2" style="width: 900px; height: 500px"></div>
+        <div id="curve_chart3" style="width: 900px; height: 500px"></div>
+
 
         <!--================End Banner Area =================-->
         <section class="service_feature">
@@ -365,6 +367,36 @@ $(document).ready(function() {
          drawChart2(chartData);
         });
 
+//draw chart 3
+
+$.ajax({
+     url: "https://io.adafruit.com/api/v2/syalsm/feeds/track3/data"//"https://io.adafruit.com/api/v2/sfollmer/feeds/waterlevel/data"// https://io.adafruit.com/api/v2/syalsm/feeds/childProgress/data//this gets all the data in a adafruit.io feed. make this your feed/data - make sure you make it public
+}).then(function(data) {
+
+console.log(data.length); // this is how you log stuff to the console - use chrome or firefox to debug and view console
+
+var chartData = new Array(data.length + 1);  // this makes an array to stor your chart data in, have one more row than you have data for the labels
+chartData[0]= [ 'time', 'track 3'];  //these are the labels for your chart columns, this has two columns, but you could add more
+
+//This is a jQuery version of for each, a type of for loop - it will call the function for each element in the provided array (in this case data)
+$.each(data, function(index, element) {
+
+console.log(element.value); //in this case element is each data item you have in your adafruit.io feed. use element.x to get the value from the JSON key pair, ie element.value, element.created_epoch (which is time in unix since 1970)
+
+
+// here we create a 1D array for each row of the data for the chart
+chartData[index+1]= [parseInt(element.created_epoch), parseInt(element.value)]; //parseFloat() if you use a float
+
+// here we add a div to greeting-id in the html code above with the text from the json
+$('.greeting-id').append($('<div>', {
+  text: element.value
+}));
+
+    });
+
+    //Now we actually call a function we write that will actually draw the chart and send the array we formated
+  drawChart3(chartData);
+ });
 
     };
 
@@ -410,6 +442,28 @@ $(document).ready(function() {
       //here we actually draw the chart with the data we created
           chart.draw(data, options);
         }
+
+
+        function drawChart3(dataIn) {
+
+          //need to take the array we made and turn it into a Google Charts Data Table
+            var data = google.visualization.arrayToDataTable(dataIn);
+
+        //chart options
+            var options = {
+              title: 'Child Progress',
+              curveType: 'function',
+              legend: { position: 'bottom' },
+              hAxis: {title: 'Date'},
+              vAxis: {title: 'Duration (seconds)'},
+            };
+
+        // we create a chart and tell it where to draw it, (here the div curve_chart we created in the html
+              var chart = new google.visualization.LineChart(document.getElementById('curve_chart3'));
+
+        //here we actually draw the chart with the data we created
+            chart.draw(data, options);
+          }
 
 });
 
